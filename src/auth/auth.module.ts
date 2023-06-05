@@ -12,7 +12,7 @@ import { AtStrastegy, RtStrastegy } from './strastegies';
     JwtModule.register({
       global: true,
       secret: 'believe_in_me',
-      signOptions: { expiresIn: '3600s' },
+      signOptions: { expiresIn: "10h" },
     }),
   ],
   controllers: [AuthController],

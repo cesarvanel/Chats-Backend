@@ -26,6 +26,7 @@ export class AuthController {
     return this.authService.findAll();
   }
 
+  @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async signUp(
@@ -39,7 +40,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async signIn(
     @Body(ValidationPipe) signinUserDto: SigninUserDto,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<Tokens> {
     return this.authService.signIn(signinUserDto);
   }
 
@@ -48,16 +49,21 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@GetCurrentUser() user: User) {
-    return this.authService.refreshToken(
-      user['username'],
-      user['refreshToken'],
-    );
+    return this.authService.refreshToken(user['email'], user['refreshToken']);
   }
 
   @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@GetCurrentUser() user: User) {
-    return this.authService.logout(user['username']);
+    return this.authService.logout(user['email']);
+  }
+
+  @UseGuards(AtGuard)
+  @Get('profile')
+  async getUser(@GetCurrentUser() user: User) {
+    return this.authService.getUser(user['email']);
+
+    //
   }
 }

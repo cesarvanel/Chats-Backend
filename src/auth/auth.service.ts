@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schema/user.schema';
+import { Tokens } from './interfaces/token.interface';
 import { SignupUserDto } from './dto/signUp-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +14,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common/exceptions';
 import { SigninUserDto } from './dto/signIn-auth.dto';
-import { Tokens } from './interfaces/token.interface';
 
 @Injectable()
 export class AuthService {
@@ -58,7 +58,7 @@ export class AuthService {
   }
 
   async signUp(signupUserDto: SignupUserDto): Promise<Tokens> {
-    const { username, password, number, email,job,avatar } = signupUserDto;
+    const { username, password, number, email, job, avatar } = signupUserDto;
     const user = await this.userModel.findOne({ email });
     if (user) {
       throw new ConflictException('user already exist');
@@ -68,20 +68,17 @@ export class AuthService {
     const hahedPassword = await bcrypt.hash(password, salt);
     const createUser = new User();
     createUser.username = username;
+    createUser.avatar = avatar;
     createUser.password = hahedPassword;
     createUser.number = number;
-    createUser.email = email, 
-    createUser.job = job; 
-    createUser.image.push(avatar)
-
+    (createUser.email = email), (createUser.job = job);
+    createUser.images = [avatar];
 
     try {
       (await this.userModel.create(createUser)).save();
-      const tokens = await this.getToken(
-        createUser.username,
-        createUser.number,
-      );
-      await this.updateRtHash(username, tokens.refreshToken);
+      const tokens = await this.getToken(createUser.email, createUser.number);
+      await this.updateRtHash(email, tokens.refreshToken);
+
       return tokens;
     } catch (error) {
       throw new InternalServerErrorException();
@@ -90,7 +87,9 @@ export class AuthService {
 
   async signIn(signinUserDto: SigninUserDto): Promise<Tokens> {
     const { email, password } = signinUserDto;
-    const user = await this.userModel.findOne({ email });
+    const user = await this.userModel
+      .findOne({ email })
+      .select('-__v  -hahedRt ');
     if (!user) {
       throw new UnauthorizedException('wrong credential try aigaint');
     }
@@ -106,6 +105,7 @@ export class AuthService {
 
     const tokens = await this.getToken(user.email, user.number);
     await this.updateRtHash(user.email, tokens.refreshToken);
+
     return tokens;
   }
 
@@ -133,5 +133,12 @@ export class AuthService {
 
   async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().exec();
+  }
+
+  async getUser(email: string): Promise<UserDocument> {
+    return await this.userModel
+      .findOne({ email })
+      .select('-__v  -hahedRt ')
+      .exec();
   }
 }
