@@ -1,4 +1,4 @@
-import { User } from '../schema/user.schema';
+import { User } from '../../schema/user.schema';
 
 export interface Tokens {
   accessToken: string;

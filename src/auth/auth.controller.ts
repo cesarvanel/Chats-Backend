@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
 import { SignupUserDto } from './dto/signUp-auth.dto';
 import { SigninUserDto } from './dto/signIn-auth.dto';
 import { Tokens } from './interfaces/token.interface';
-import { User } from './schema/user.schema';
+import { User } from '../schema/user.schema';
 import { AtGuard, RtGuard } from './common/guards';
 import { GetCurrentUser } from './common/decorators/get-current-user.decorator';
 import { Public } from './common/decorators';
@@ -23,7 +23,7 @@ export class AuthController {
 
   @Get()
   async findAll(): Promise<User[]> {
-    return this.authService.findAll();
+    return await  this.authService.findAll();
   }
 
   @Public()

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './schema/user.schema';
+import { User, UserDocument } from '../schema/user.schema';
 import { Tokens } from './interfaces/token.interface';
 import { SignupUserDto } from './dto/signUp-auth.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -38,7 +38,7 @@ export class AuthService {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         { email, number },
-        { secret: 'believe_in_me', expiresIn: 120 },
+        { secret: 'believe_in_me', expiresIn: 3600 },
       ),
       this.jwtService.signAsync(
         { email, number },
